@@ -27,6 +27,9 @@ License
 =======
 "Z-Stack" is distributed under GNU GPL v2 license, see LICENSE.
 
+It also uses third-party librarires and programs:
++ MCT is an algorithm written by Krishnan Padmanabhan
+
 Contacts
 ========
 E-mail your feedback at thaihoabo@gmail.com.
