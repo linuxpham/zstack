@@ -1,4 +1,4 @@
-zstack
+Z-Stack
 ======
 
 Z-Stack Image Analysis
@@ -20,7 +20,7 @@ See INSTALL.md file.
 
 System requirements
 ===================
-+ Linux or MAC OSX
++ Linux or MAC OSX or Window
 + Matlab of version at least 2008.
 
 License
