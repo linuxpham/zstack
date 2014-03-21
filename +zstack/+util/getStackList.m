@@ -72,7 +72,4 @@ function [arrStackList, arrStackListName] = getStackList(directoryPath)
         arrVectorTheDepth = containers.Map('KeyType','int32','ValueType','char');
         jLoop = 1;
     end
-    
-    % Set response data
-    %arrStackList  = [];
 end

@@ -27,7 +27,7 @@ function varargout = zstack(varargin)
 
 % Edit the above text to modify the response to help zstack
 
-% Last Modified by GUIDE v2.5 05-Mar-2014 23:17:30
+% Last Modified by GUIDE v2.5 20-Mar-2014 01:29:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -50,7 +50,6 @@ end
 % End initialization code - DO NOT EDIT
 end
 
-
 % --- Executes just before zstack is made visible.
 function zstack_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
@@ -68,6 +67,7 @@ guidata(hObject, handles);
 % Import initialize
 import zstack.main.*;
 import zstack.l3rd.*;
+import zstack.util.*;
 
 % Initialize global variables
 initialize();
@@ -108,19 +108,6 @@ imshow(arrDimession, arrColorMap);
 % Resize axes size
 set(handles.lbLogo, 'Visible', 'off', 'Units', 'pixels');
 
-% Get Loader image data    
-[arrDimession, arrColorMap] = imread('loader.jpg', 'jpg');    
-
-% Change current axes
-cla(handles.btGraph,'reset');
-axes(handles.btGraph);
-
-% Show image in view
-imshow(arrDimession, arrColorMap);
-
-% Resize axes size
-set(handles.btGraph, 'Visible', 'off', 'Units', 'pixels', 'Position', [300, 20, iHeighImageInAxes, iHeighImageInAxes]);
-
 % Center - Top the dialog
 movegui(handles.zstackDialog,'north');
 
@@ -149,7 +136,8 @@ function imageClickCallback(hObject , eventdata, imageName, iRatio)
 iPlotSize = get(0,'ScreenSize');
 
 % Create a figure
-fgScreen = figure('Toolbar','none', 'Menubar','none');
+%fgScreen = figure('Toolbar','none', 'Menubar','none');
+fgScreen = figure('Toolbar','figure', 'Menubar','none');
 
 % Set attributes for figure
 set(fgScreen, 'Color', [1 1 1], 'Position', iPlotSize, 'Visible', 'on', 'Name', imageName);
@@ -184,6 +172,7 @@ function btChooseDirectory_Callback(hObject, eventdata, handles)
 % Import initialize
 import zstack.main.*;
 import zstack.l3rd.*;
+import zstack.util.*;
 
 %% Current Split Path for platform
 global currSplitPath;
@@ -247,6 +236,11 @@ set(handles.btListStack, 'String', ['Stack List In The Brain']);
 set(handles.pnImageList, 'Title', 'Images (0)');
 set(handles.lbCurrImage, 'String', 'Loading...');
 
+% Reset popup RGB stack
+set(handles.popupRedStack, 'String', ['Stack Name']);
+set(handles.popupBlueStack, 'String', ['Stack Name']);
+set(handles.popupGreenStack, 'String', ['Stack Name']);
+
 % Reset MIN and MAX of slider
 set(handles.btSlider,'Min', 0.01);
 set(handles.btSlider,'Max', 1.0);
@@ -280,6 +274,11 @@ if iStackLength > 0
             
     % Show combobox of Stack
     set(handles.btListStack, 'String', arrStackListID);
+    
+    % Show combobox of RGB Stack
+    set(handles.popupRedStack, 'String', arrStackListID);
+    set(handles.popupBlueStack, 'String', arrStackListID);
+    set(handles.popupGreenStack, 'String', arrStackListID);
     
     % Get total images
     iTotalImage = arrStackListVal{1};
@@ -373,6 +372,7 @@ function btListStack_Callback(hObject, eventdata, handles)
 % Import initialize
 import zstack.main.*;
 import zstack.l3rd.*;
+import zstack.util.*;
 
 %% Current Split Path for platform
 global currSplitPath;
@@ -537,6 +537,7 @@ function btSlider_Callback(hObject, eventdata, handles)
 % Import initialize
 import zstack.main.*;
 import zstack.l3rd.*;
+import zstack.util.*;
 
 % Get current position of slider
 iCurrPosition = int32(get(hObject,'Value'));
@@ -693,14 +694,10 @@ function btShowStackAuto_Callback(hObject, eventdata, handles)
 
 % Import initialize
 import zstack.main.*;
+import zstack.util.*;
 
 % Load all global variables
 global debugMode;
-
-% Debug information
-if debugMode
-    disp(strcat('Current position of slider: ', num2str(iCurrPosition)));
-end
 
 %% All images in a stack (the depth images)
 global arrStackListName;
@@ -752,11 +749,6 @@ import zstack.main.*;
 
 % Load all global variables
 global debugMode;
-
-% Debug information
-if debugMode
-    disp(strcat('Current position of slider: ', num2str(iCurrPosition)));
-end
 
 %% All images in a stack (the depth images)
 global arrStackListName;
@@ -880,8 +872,6 @@ web('https://etool.me/~thpham/');
 % End initialization code - DO NOT EDIT
 end
 
-
-
 function txtFilterNumber_Callback(hObject, eventdata, handles)
 % hObject    handle to txtFilterNumber (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -904,6 +894,558 @@ function txtFilterNumber_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes on image
+function imageRGBClickCallback(hObject , eventdata, imageName)
+
+% Get Plot Size
+iPlotSize = get(0,'ScreenSize');
+
+% Create a figure
+fgScreen = figure('Toolbar','figure', 'Menubar','none');
+
+% Set attributes for figure
+set(fgScreen, 'Color', [1 1 1], 'Position', iPlotSize, 'Visible', 'on', 'Name', imageName);
+
+% Create Axes
+axesHandle = axes;
+
+% Set current axes
+set(fgScreen,'CurrentAxes', axesHandle);
+set(axesHandle, 'Units', 'pixels');
+set(fgScreen, 'Units', 'pixels');
+set(0, 'Units', 'pixels');
+
+% Get TIF image data
+arrDimession = get(hObject,'CData');
+
+% Show image in view
+imshow(arrDimession);
+
+% Set grid on
+grid on;
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes on selection change in popupRedStack.
+function popupRedStack_Callback(hObject, eventdata, handles)
+% hObject    handle to popupRedStack (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupRedStack contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupRedStack
+
+% Import initialize
+import zstack.main.*;
+import zstack.l3rd.*;
+import zstack.util.*;
+
+%% Current Split Path for platform
+global currSplitPath;
+
+%% Current directory which contains the brain data
+global currDirectoryPath;
+
+% Load all global variables
+global debugMode;
+
+% Get all stack contents red data
+arrRedStackContents = cellstr(get(handles.popupRedStack,'String'));
+
+% Get current red stack in menu
+keyRedStackName = arrRedStackContents{get(handles.popupRedStack,'Value')};
+
+% Get all stack contents blue data
+arrBlueStackContents = cellstr(get(handles.popupBlueStack,'String'));
+
+% Get current blue stack in menu
+keyBlueStackName = arrBlueStackContents{get(handles.popupBlueStack,'Value')};
+
+% Get all stack contents green data
+arrGreenStackContents = cellstr(get(handles.popupGreenStack,'String'));
+
+% Get current green stack in menu
+keyGreenStackName = arrGreenStackContents{get(handles.popupGreenStack,'Value')};
+
+% Debug information
+if debugMode
+    disp(strcat('Current red stack: ', keyRedStackName));
+    disp(strcat('Current blue stack: ', keyBlueStackName));
+    disp(strcat('Current green stack: ', keyGreenStackName));
+end
+
+% Check current three stack name
+if ((strcmp(keyRedStackName, keyBlueStackName) == true) || (strcmp(keyRedStackName, keyGreenStackName) == true) || (strcmp(keyBlueStackName, keyGreenStackName) == true))
+    return
+end
+
+% Reset popup stack menu and label
+set(handles.lbImageNumber, 'String', 'Loading...');
+
+% Reset MIN and MAX of slider
+set(handles.sliderRGBStack,'Min', 1);
+set(handles.sliderRGBStack,'Max', 1);
+set(handles.sliderRGBStack,'Value', 1);
+set(handles.sliderRGBStack, 'SliderStep', [0.01, 1.0]);
+
+%% All Stack List in Brain
+global arrStackList;
+
+%% All images in a stack (the depth images)
+global arrStackListName;
+
+% Get all keys of stack data
+arrStackListID = keys(arrStackList);
+
+% Get stack length
+iStackLength = length(arrStackListID);
+
+% Loop to put data to popup stack menu
+if iStackLength > 0
+    %% -------------------------------------
+    %% Handle the window interface
+    %% -------------------------------------
+    
+    % Get total images
+    iTotalImage = arrStackList(keyRedStackName);
+    
+    % Change MIN and MAX of slider
+    set(handles.sliderRGBStack,'Max', iTotalImage);
+    set(handles.sliderRGBStack, 'SliderStep', [1/double(iTotalImage - 1), 1/double(iTotalImage - 1)]);
+    
+    % Get the first image in a red stack
+    arrRedStackImages = arrStackListName(keyRedStackName);
+    
+    % Get current TIF image full path
+    currRedImageFullPath = strcat(currDirectoryPath, currSplitPath, arrRedStackImages(1));
+    
+    % Get the first image in a blue stack
+    arrBlueStackImages = arrStackListName(keyBlueStackName);
+    
+    % Get current TIF image full path
+    currBlueImageFullPath = strcat(currDirectoryPath, currSplitPath, arrBlueStackImages(1));
+    
+    % Get the first image in a green stack
+    arrGreenStackImages = arrStackListName(keyGreenStackName);
+    
+    % Get current TIF image full path
+    currGreenImageFullPath = strcat(currDirectoryPath, currSplitPath, arrGreenStackImages(1));
+    
+    % Debug information
+    if debugMode
+        disp(currRedImageFullPath);
+        disp(currBlueImageFullPath);
+        disp(currGreenImageFullPath);
+    end
+    
+    % Plit string to array
+    arrStringData = strsplit(currRedImageFullPath, char(keyRedStackName));
+    
+    % Set image label in stack
+    set(handles.lbImageNumber, 'String', arrStringData{2}(2:end));
+    
+    % Debug information
+    if debugMode
+        disp(arrStringData);
+    end
+    
+    % Get TIF image data
+    [arrDimession] = showRGB(currRedImageFullPath, currBlueImageFullPath, currGreenImageFullPath);
+    disp(size(arrDimession));
+    
+    % Change current axes
+    cla(handles.btGraph,'reset');
+    axes(handles.btGraph);
+                
+    % Show image in view
+    imageHandle = imagesc(arrDimession);
+        
+    % Set image callback when click
+    set(imageHandle, 'ButtonDownFcn', {@imageRGBClickCallback, arrStringData{2}(2:end)});
+    
+    % Resize axes size
+    set(handles.btGraph, 'Visible', 'off', 'Units', 'pixels');
+        
+    % Set grid on
+    grid on;    
+end
+
+% End initialization code - DO NOT EDIT
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function popupRedStack_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupRedStack (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes on selection change in popupRedImage.
+function popupRedImage_Callback(hObject, eventdata, handles)
+% hObject    handle to popupRedImage (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupRedImage contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupRedImage
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes during object creation, after setting all properties.
+function popupRedImage_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupRedImage (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% End initialization code - DO NOT EDIT
+end
+
+
+% --- Executes on selection change in popupBlueStack.
+function popupBlueStack_Callback(hObject, eventdata, handles)
+% hObject    handle to popupBlueStack (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupBlueStack contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupBlueStack
+
+popupRedStack_Callback(hObject, eventdata, handles);
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes during object creation, after setting all properties.
+function popupBlueStack_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupBlueStack (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes on selection change in popupBlueImage.
+function popupBlueImage_Callback(hObject, eventdata, handles)
+% hObject    handle to popupBlueImage (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupBlueImage contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupBlueImage
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes during object creation, after setting all properties.
+function popupBlueImage_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupBlueImage (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes on selection change in popupGreenStack.
+function popupGreenStack_Callback(hObject, eventdata, handles)
+% hObject    handle to popupGreenStack (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupGreenStack contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupGreenStack
+
+popupRedStack_Callback(hObject, eventdata, handles);
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes during object creation, after setting all properties.
+function popupGreenStack_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupGreenStack (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes on selection change in popupGreenImage.
+function popupGreenImage_Callback(hObject, eventdata, handles)
+% hObject    handle to popupGreenImage (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupGreenImage contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupGreenImage
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes during object creation, after setting all properties.
+function popupGreenImage_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupGreenImage (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes on button press in btShowRBG.
+function btShowRBG_Callback(hObject, eventdata, handles)
+% hObject    handle to btShowRBG (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes on button press in btShowRBGAuto.
+function btShowRBGAuto_Callback(hObject, eventdata, handles)
+% hObject    handle to btShowRBGAuto (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Import initialize
+import zstack.main.*;
+import zstack.util.*;
+
+% Load all global variables
+global debugMode;
+
+%% All images in a stack (the depth images)
+global arrStackListName;
+
+%% Paused timer
+global iTimePaused;
+
+% Change title of current image label
+set(handles.lbImageNumber, 'String', 'Loading...');
+
+% Get all stack contents data
+arrStackContents = cellstr(get(handles.popupRedStack,'String'));
+
+% Get current stack in menu
+keyName = arrStackContents{get(handles.popupRedStack,'Value')};
+
+% Debug information
+if debugMode
+    disp(strcat('Current red stack: ', keyName));
+end
+
+% Get the first image in a stack
+arrStackImages = arrStackListName(keyName);
+
+% Loop to show images
+for iCurrPosition = 1:length(arrStackImages)
+    % Set value for slider RGB data
+    set(handles.sliderRGBStack, 'Value', iCurrPosition);
+    
+    % Call slider execution
+    sliderRGBStack_Callback(handles.sliderRGBStack, eventdata, handles);
+       
+    % Pause some microseconds    
+    pause(iTimePaused);
+end
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes on slider movement.
+function sliderRGBStack_Callback(hObject, eventdata, handles)
+% hObject    handle to sliderRGBStack (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+% Import initialize
+import zstack.main.*;
+import zstack.l3rd.*;
+import zstack.util.*;
+
+% Get current position of slider
+iCurrPosition = int32(get(hObject,'Value'));
+
+%% Current Split Path for platform
+global currSplitPath;
+
+%% Current directory which contains the brain data
+global currDirectoryPath;
+
+% Load all global variables
+global debugMode;
+
+% Debug information
+if debugMode
+    disp(strcat('Current position of slider: ', num2str(iCurrPosition)));
+end
+
+% Get all stack contents red data
+arrRedStackContents = cellstr(get(handles.popupRedStack,'String'));
+
+% Get current red stack in menu
+keyRedStackName = arrRedStackContents{get(handles.popupRedStack,'Value')};
+
+% Get all stack contents blue data
+arrBlueStackContents = cellstr(get(handles.popupBlueStack,'String'));
+
+% Get current blue stack in menu
+keyBlueStackName = arrBlueStackContents{get(handles.popupBlueStack,'Value')};
+
+% Get all stack contents green data
+arrGreenStackContents = cellstr(get(handles.popupGreenStack,'String'));
+
+% Get current green stack in menu
+keyGreenStackName = arrGreenStackContents{get(handles.popupGreenStack,'Value')};
+
+% Debug information
+if debugMode
+    disp(strcat('Current red stack: ', keyRedStackName));
+    disp(strcat('Current blue stack: ', keyBlueStackName));
+    disp(strcat('Current green stack: ', keyGreenStackName));
+end
+
+% Check current three stack name
+if ((strcmp(keyRedStackName, keyBlueStackName) == true) || (strcmp(keyRedStackName, keyGreenStackName) == true) || (strcmp(keyBlueStackName, keyGreenStackName) == true))
+    return
+end
+
+% Reset popup stack menu and label
+set(handles.lbImageNumber, 'String', 'Loading...');
+
+%% All Stack List in Brain
+global arrStackList;
+
+%% All images in a stack (the depth images)
+global arrStackListName;
+
+% Get all keys of stack data
+arrStackListID = keys(arrStackList);
+
+% Get stack length
+iStackLength = length(arrStackListID);
+
+% Loop to put data to popup stack menu
+if iStackLength > 0
+    %% -------------------------------------
+    %% Handle the window interface
+    %% -------------------------------------
+        
+    % Get the first image in a red stack
+    arrRedStackImages = arrStackListName(keyRedStackName);
+    
+    % Get current TIF image full path
+    currRedImageFullPath = strcat(currDirectoryPath, currSplitPath, arrRedStackImages(iCurrPosition));
+    
+    % Get the first image in a blue stack
+    arrBlueStackImages = arrStackListName(keyBlueStackName);
+    
+    % Get current TIF image full path
+    currBlueImageFullPath = strcat(currDirectoryPath, currSplitPath, arrBlueStackImages(iCurrPosition));
+    
+    % Get the first image in a green stack
+    arrGreenStackImages = arrStackListName(keyGreenStackName);
+    
+    % Get current TIF image full path
+    currGreenImageFullPath = strcat(currDirectoryPath, currSplitPath, arrGreenStackImages(iCurrPosition));
+    
+    % Debug information
+    if debugMode
+        disp(currRedImageFullPath);
+        disp(currBlueImageFullPath);
+        disp(currGreenImageFullPath);
+    end
+    
+    % Plit string to array
+    arrStringData = strsplit(currRedImageFullPath, char(keyRedStackName));
+    
+    % Set image label in stack
+    set(handles.lbImageNumber, 'String', arrStringData{2}(2:end));
+    
+    % Debug information
+    if debugMode
+        disp(arrStringData);
+    end
+    
+    % Get TIF image data
+    [arrDimession] = showRGB(currRedImageFullPath, currBlueImageFullPath, currGreenImageFullPath);
+    disp(size(arrDimession));
+    
+    % Change current axes
+    cla(handles.btGraph,'reset');
+    axes(handles.btGraph);
+                
+    % Show image in view
+    imageHandle = imagesc(arrDimession);
+        
+    % Set image callback when click
+    set(imageHandle, 'ButtonDownFcn', {@imageRGBClickCallback, arrStringData{2}(2:end)});
+    
+    % Resize axes size
+    set(handles.btGraph, 'Visible', 'off', 'Units', 'pixels');
+        
+    % Set grid on
+    grid on;    
+end
+
+% End initialization code - DO NOT EDIT
+end
+
+% --- Executes during object creation, after setting all properties.
+function sliderRGBStack_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to sliderRGBStack (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
 % End initialization code - DO NOT EDIT

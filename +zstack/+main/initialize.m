@@ -59,7 +59,7 @@ end
 currWidthOfFigure = 46;
 
 % Set height of image in axes
-iHeighImageInAxes = 560;
+iHeighImageInAxes = 760;
 
 %% Set Paused timer
 iTimePaused = 1/60;
@@ -68,7 +68,7 @@ iTimePaused = 1/60;
 iLeftPaddingInAxes = 270;
 
 %% Set Image Left Padding
-iBottomPaddingInAxes = 0;
+iBottomPaddingInAxes = 10;
 
 end
 
