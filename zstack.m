@@ -27,7 +27,7 @@ function varargout = zstack(varargin)
 
 % Edit the above text to modify the response to help zstack
 
-% Last Modified by GUIDE v2.5 20-Mar-2014 01:29:42
+% Last Modified by GUIDE v2.5 06-Apr-2014 21:42:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1447,6 +1447,150 @@ function sliderRGBStack_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+
+% End initialization code - DO NOT EDIT
+end
+
+
+% --- Executes on button press in btShowCurrFullStack.
+function btShowCurrFullStack_Callback(hObject, eventdata, handles)
+% hObject    handle to btShowCurrFullStack (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Import initialize
+import zstack.main.*;
+import zstack.l3rd.*;
+import zstack.util.*;
+
+%% Current Split Path for platform
+global currSplitPath;
+
+%% Current directory which contains the brain data
+global currDirectoryPath;
+
+% Load all global variables
+global debugMode;
+
+%% All images in a stack (the depth images)
+global arrStackListName;
+
+%% Height of image in axes
+global iHeighImageInAxes;
+
+%% Image Left Padding
+global iLeftPaddingInAxes;
+
+%% Image Left Padding
+global iBottomPaddingInAxes;
+
+% Change title of current image label
+set(handles.lbCurrImage, 'String', 'Loading...');
+
+% Get all stack contents data
+arrStackContents = cellstr(get(handles.btListStack,'String'));
+
+% Get current stack in menu
+keyName = arrStackContents{get(handles.btListStack,'Value')};
+
+% Debug information
+if debugMode
+    disp(strcat('Current stack: ', keyName));
+end
+
+% Get the first image in a stack
+arrStackImages = arrStackListName(keyName);
+
+% Get flag to control MCT
+isMCT = get(handles.btRadioYes,'Value');
+
+% Get current TIF image full path
+currImageFullPath = strcat(currDirectoryPath, currSplitPath, arrStackImages(1));
+
+% Debug information
+if debugMode
+    disp(currImageFullPath);
+end
+
+% Create bit size
+iBitSize = 0
+
+% Get TIF image data    
+[arrDimession, arrColorMap] = imread(currImageFullPath, 'tif');
+
+% The output image MCTimage is the thresholded image
+if isMCT
+    [arrDimession] = MCT(arrDimession);
+else
+    % Get all bits input data
+    arrBitContents = cellstr(get(handles.txtFilterNumber,'String'));
+
+    % Get current bit input data
+    iBitSize = arrBitContents{get(handles.txtFilterNumber,'Value')};
+
+    % Convert from string to number
+    iBitSize = str2double(iBitSize);
+
+    % Check convert bit number
+    if iBitSize > 0
+        [arrDimession] = MNL(arrDimession, iBitSize);
+    end
+end
+
+% Get image information
+imageInfo = imfinfo(currImageFullPath, 'tif');
+
+% Get ratio between width and height
+iRatio = imageInfo.Width / imageInfo.Height;
+
+% Create the width and the height of axes    
+iWidth = iHeighImageInAxes * iRatio;
+
+% Loop to show images
+for iCurrPosition = 2:length(arrStackImages)
+    % Get current TIF image full path
+    currImageFullPath = strcat(currDirectoryPath, currSplitPath, arrStackImages(iCurrPosition));
+
+    % Debug information
+    if debugMode
+        disp(currImageFullPath);
+    end
+    
+    % Get TIF image data    
+    [arrDimessionNext, arrColorMap] = imread(currImageFullPath, 'tif');
+    
+    % The output image MCTimage is the thresholded image
+    if isMCT
+        [arrDimessionNext] = MCT(arrDimessionNext);
+    else        
+        % Check convert bit number
+        if iBitSize > 0
+            [arrDimessionNext] = MNL(arrDimessionNext, iBitSize);
+        end
+    end
+    
+    % Add these matrix
+    arrDimession = imadd(arrDimession, arrDimessionNext, 'uint16')
+end
+
+% Change current axes
+cla(handles.btGraph,'reset');
+axes(handles.btGraph);
+
+% Show image in view
+imageHandle = imshow(arrDimession);
+
+% Set image callback when click
+set(imageHandle, 'ButtonDownFcn', {@imageClickCallback, keyName, 0});
+
+% Resize axes size
+set(handles.btGraph, 'Visible', 'off', 'Units', 'pixels', 'Position', [iLeftPaddingInAxes, iBottomPaddingInAxes, iWidth, iHeighImageInAxes]);
+
+% Change title of current image label    
+set(handles.lbCurrImage, 'String', strcat('Current stack:', keyName));
+
+% Set grid on
+grid on;
 
 % End initialization code - DO NOT EDIT
 end
