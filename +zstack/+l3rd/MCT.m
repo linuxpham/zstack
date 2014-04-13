@@ -42,8 +42,7 @@ if length(size(inputimage)) == 2;
         uv = (1-(nju/nm));
         
         fbe(1,jj-1) = (beuh*benh')/sqrt(selfcc*(((nm-nju)*(nju))/nm));
-                        fbe(isinf(fbe))=0;
-
+        fbe(isinf(fbe))=0;
 
     end; 
     [bev bep] = max(fbe);

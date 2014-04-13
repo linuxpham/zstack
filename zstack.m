@@ -84,9 +84,6 @@ set(handles.zstackDialog,'Position', [arrPosition(1), arrPosition(2), currWidthO
 % Registry the old width of figure
 currWidthOfFigure = arrPosition(3);
 
-%% Height of image in axes
-global iHeighImageInAxes;
-
 % Load all global variables
 global debugMode;
 
@@ -982,7 +979,7 @@ end
 
 % Check current three stack name
 if ((strcmp(keyRedStackName, keyBlueStackName) == true) || (strcmp(keyRedStackName, keyGreenStackName) == true) || (strcmp(keyBlueStackName, keyGreenStackName) == true))
-    return
+    return;
 end
 
 % Reset popup stack menu and label
@@ -1415,8 +1412,7 @@ if iStackLength > 0
     
     % Get TIF image data
     [arrDimession] = showRGB(currRedImageFullPath, currBlueImageFullPath, currGreenImageFullPath);
-    disp(size(arrDimession));
-    
+        
     % Change current axes
     cla(handles.btGraph,'reset');
     axes(handles.btGraph);
@@ -1484,8 +1480,14 @@ global iLeftPaddingInAxes;
 %% Image Left Padding
 global iBottomPaddingInAxes;
 
+%% Paused timer
+global iTimePaused;
+
 % Change title of current image label
 set(handles.lbCurrImage, 'String', 'Loading...');
+
+% Pause some microseconds    
+pause(iTimePaused);
 
 % Get all stack contents data
 arrStackContents = cellstr(get(handles.btListStack,'String'));
@@ -1513,10 +1515,10 @@ if debugMode
 end
 
 % Create bit size
-iBitSize = 0
+iBitSize = 0;
 
 % Get TIF image data    
-[arrDimession, arrColorMap] = imread(currImageFullPath, 'tif');
+[arrDimession] = imread(currImageFullPath, 'tif');
 
 % The output image MCTimage is the thresholded image
 if isMCT
@@ -1557,9 +1559,9 @@ for iCurrPosition = 2:length(arrStackImages)
     end
     
     % Get TIF image data    
-    [arrDimessionNext, arrColorMap] = imread(currImageFullPath, 'tif');
+    [arrDimessionNext] = imread(currImageFullPath, 'tif');
     
-    % The output image MCTimage is the thresholded image
+    % The output image MCTimage is the thresholded image    
     if isMCT
         [arrDimessionNext] = MCT(arrDimessionNext);
     else        
@@ -1570,12 +1572,15 @@ for iCurrPosition = 2:length(arrStackImages)
     end
     
     % Add these matrix
-    arrDimession = imadd(arrDimession, arrDimessionNext, 'uint16')
+    arrDimession = arrDimession + arrDimessionNext;
 end
 
 % Change current axes
 cla(handles.btGraph,'reset');
 axes(handles.btGraph);
+
+% Convert to RBG
+arrDimession = arrDimession./max(max(arrDimession));
 
 % Show image in view
 imageHandle = imshow(arrDimession);
