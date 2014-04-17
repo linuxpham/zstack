@@ -1042,10 +1042,10 @@ if iStackLength > 0
     end
     
     % Plit string to array
-    arrStringData = strsplit(currRedImageFullPath, char(keyRedStackName));
-    
+    arrStringData = splitString(currRedImageFullPath, char(keyRedStackName));
+        
     % Set image label in stack
-    set(handles.lbImageNumber, 'String', arrStringData{2}(2:end));
+    set(handles.lbImageNumber, 'String', arrStringData{2}(3:end));
     
     % Debug information
     if debugMode
@@ -1053,8 +1053,7 @@ if iStackLength > 0
     end
     
     % Get TIF image data
-    [arrDimession] = showRGB(currRedImageFullPath, currBlueImageFullPath, currGreenImageFullPath);
-    disp(size(arrDimession));
+    [arrDimession] = showRGB(currRedImageFullPath, currBlueImageFullPath, currGreenImageFullPath);   
     
     % Change current axes
     cla(handles.btGraph,'reset');
@@ -1064,7 +1063,7 @@ if iStackLength > 0
     imageHandle = imagesc(arrDimession);
         
     % Set image callback when click
-    set(imageHandle, 'ButtonDownFcn', {@imageRGBClickCallback, arrStringData{2}(2:end)});
+    set(imageHandle, 'ButtonDownFcn', {@imageRGBClickCallback, arrStringData{2}(3:end)});
     
     % Resize axes size
     set(handles.btGraph, 'Visible', 'off', 'Units', 'pixels');
@@ -1400,10 +1399,10 @@ if iStackLength > 0
     end
     
     % Plit string to array
-    arrStringData = strsplit(currRedImageFullPath, char(keyRedStackName));
+    arrStringData = splitString(currRedImageFullPath, char(keyRedStackName));
     
     % Set image label in stack
-    set(handles.lbImageNumber, 'String', arrStringData{2}(2:end));
+    set(handles.lbImageNumber, 'String', arrStringData{2}(3:end));
     
     % Debug information
     if debugMode
@@ -1421,7 +1420,7 @@ if iStackLength > 0
     imageHandle = imagesc(arrDimession);
         
     % Set image callback when click
-    set(imageHandle, 'ButtonDownFcn', {@imageRGBClickCallback, arrStringData{2}(2:end)});
+    set(imageHandle, 'ButtonDownFcn', {@imageRGBClickCallback, arrStringData{2}(3:end)});
     
     % Resize axes size
     set(handles.btGraph, 'Visible', 'off', 'Units', 'pixels');
