@@ -3,7 +3,7 @@ Z-Stack
 
 Z-Stack Image Analysis
 
-Release date: 6/03/2014
+Release date: 06/03/2014
 
 Authors
 =======
